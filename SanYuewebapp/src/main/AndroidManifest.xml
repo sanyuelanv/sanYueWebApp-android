@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sanyuelanv.sanwebapp">
+
+    <application>
+        <activity
+            android:configChanges="uiMode"
+            android:name=".activity.MainWebAppActivity"></activity>
+    </application>
+
+</manifest>
