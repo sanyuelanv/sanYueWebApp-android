@@ -3,20 +3,21 @@ package com.sanyuelanv.sanwebapp.view;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.sanyuelanv.sanwebapp.adapter.PickerAdapter;
+import com.bigkoo.pickerview.adapter.ArrayWheelAdapter;
+import com.contrarywind.listener.OnItemSelectedListener;
+import com.contrarywind.view.WheelView;
 import com.sanyuelanv.sanwebapp.base.BaseAlertLinearLayout;
 import com.sanyuelanv.sanwebapp.bean.SanYuePickItem;
 import com.sanyuelanv.sanwebapp.utils.SanYueUIUtils;
@@ -30,6 +31,36 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
     private TextView cancelBtn;
     private TextView successBtn;
     private View topLine;
+    private SanYueMyPicker picker;
+    private int normalIndex;
+    protected OnSelectListener selectListener;
+    public interface OnSelectListener {
+        void onSelect(int pos,int type);
+        void onSelectMulti(int[] pos,int type);
+        void onSelectDate(String res,int type);
+    }
+    private View.OnClickListener clickListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View v) {
+            switch (item.getMode()){
+                case 0:{
+                    if (selectListener == null) return;
+                    int type = (int)v.getTag();
+                    if (type < 0){
+                        selectListener.onSelect(0,type);
+                    }
+                    else {
+                        selectListener.onSelect(normalIndex,type);
+                    }
+                    break;
+                }
+            }
+        }
+    };
+
+    public void setSelectListener(OnSelectListener selectListener) {
+        this.selectListener = selectListener;
+    }
 
     public SanYuePickerView(Context context, SanYuePickItem item, int currentNightMode) {
         super(context);
@@ -49,8 +80,15 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
         creatTopView();
         // list : 5 个 height= 56
         creatList();
-
+        // 改变主题
         changeTheme(currentNightMode);
+        // mask 取消
+        if (item.isBackGroundCancel()){
+            setTag(-2);
+            setOnTouchListener(this);
+            setOnClickListener(clickListener);
+        }
+
     }
     private void creatTopView(){
         LinearLayout topView = new LinearLayout(mContext);
@@ -62,25 +100,16 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
         cancelBtn.setText("取消");
         cancelBtn.setGravity(Gravity.CENTER);
         cancelBtn.getPaint().setFakeBoldText(true);
-        cancelBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
+        cancelBtn.setTag(-1);
+        cancelBtn.setOnClickListener(clickListener);
 
         successBtn = new TextView(mContext);
         successBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
         successBtn.setText("确认");
         successBtn.setGravity(Gravity.CENTER);
         successBtn.getPaint().setFakeBoldText(true);
-        successBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
+        successBtn.setTag(0);
+        successBtn.setOnClickListener(clickListener);
         cancelBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(SanYueUIUtils.dp2px(mContext,70),ViewGroup.LayoutParams.MATCH_PARENT);
 
@@ -97,11 +126,27 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
         mainBox.addView(topLine,lineParams);
     }
     private void creatList(){
-        int recyclerViewHeight = SanYueUIUtils.dp2px(mContext,56 * 5);
-        //int margin = SanYueUIUtils.dp2px(mContext,15);
-        SanYuePickerListView recyclerView = new SanYuePickerListView(mContext,item.getList(),1);
-        LinearLayout.LayoutParams recyclerViewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,recyclerViewHeight);
-        mainBox.addView(recyclerView,recyclerViewParams);
+        switch (item.getMode()){
+            case 0:{
+                normalIndex = item.getNormalValue();
+                picker = new SanYueMyPicker(mContext,item.getList());
+                picker.setCurrentItem(normalIndex);
+                picker.setOnItemSelectedListener(new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(int index) {
+                        normalIndex = index;
+                        if (item.isListenChange()){
+                            selectListener.onSelect(index,1);
+                        }
+                    }
+                });
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                mainBox.addView(picker,params);
+                break;
+            }
+        }
+
+
     }
     @Override
     public void changeTheme(int mode) {
@@ -124,7 +169,6 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
         int lineColor;
         float radius = SanYueUIUtils.dp2px(mContext,12);
         float[] radii = {radius,radius,radius,radius,0,0,0,0};
-        float[] radiiNone = {0,0,0,0,0,0,0,0};
 
         if (currentNightMode == Configuration.UI_MODE_NIGHT_NO){
             mainBgColor = Color.rgb(245,245,245);
@@ -135,6 +179,9 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
             mainBgColor = Color.rgb(24,24,24);
             successTextColors = new int[]{Color.argb(125,27,142,19),Color.rgb(27,142,19)};
             lineColor = Color.rgb(80,80,80);
+        }
+        if (picker != null){
+            picker.changeMode(mode);
         }
         mainBox.setBackground(SanYueUIUtils.getDrawable(radii,0,0,mainBgColor));
         successBtn.setTextColor(getTextColorList(successTextColors));

@@ -33,6 +33,10 @@ import com.sanyuelanv.sanwebapp.view.SanYueModalView;
 public class SanYueActionSheet extends SanYueBaseBottomDialog {
     private SanYueActionSheetItem actionSheetItem;
     private SanYueActionSheetView actionSheetView;
+    protected BaseAlertLinearLayout.OnControlBtnListener listener;
+    public void setListener(BaseAlertLinearLayout.OnControlBtnListener listener) {
+        this.listener = listener;
+    }
 
     public SanYueActionSheet(SanYueActionSheetItem actionSheetItem, int currentNightMode,int height) {
         super(height,currentNightMode);
@@ -44,13 +48,7 @@ public class SanYueActionSheet extends SanYueBaseBottomDialog {
     @Override
     protected View createView() {
         actionSheetView = new SanYueActionSheetView(getContext(),actionSheetItem,currentNightMode);
-        actionSheetView.setListener(new BaseAlertLinearLayout.OnControlBtnListener() {
-            @Override
-            public void onClick(int t) {
-                selectType = t;
-                getDialog().dismiss();
-            }
-        });
+        actionSheetView.setListener(listener);
         return actionSheetView;
     }
 }

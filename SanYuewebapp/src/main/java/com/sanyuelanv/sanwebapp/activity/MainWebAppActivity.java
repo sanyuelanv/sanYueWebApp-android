@@ -17,6 +17,7 @@ import com.sanyuelanv.sanwebapp.R;
 import com.sanyuelanv.sanwebapp.SanYueWebApp;
 import com.sanyuelanv.sanwebapp.base.AndroidtoJs;
 import com.sanyuelanv.sanwebapp.base.BaseActivity;
+import com.sanyuelanv.sanwebapp.base.BaseAlertLinearLayout;
 import com.sanyuelanv.sanwebapp.base.SanYueBaseBottomDialog;
 import com.sanyuelanv.sanwebapp.bean.SanYueActionSheetItem;
 import com.sanyuelanv.sanwebapp.bean.SanYueAppMessage;
@@ -32,6 +33,7 @@ import com.sanyuelanv.sanwebapp.utils.SanYueUIUtils;
 import com.sanyuelanv.sanwebapp.view.SanYueAppLoadView;
 import com.sanyuelanv.sanwebapp.view.SanYueCapsuleBtn;
 import com.sanyuelanv.sanwebapp.view.SanYueErrorView;
+import com.sanyuelanv.sanwebapp.view.SanYuePickerView;
 import com.sanyuelanv.sanwebapp.view.SanYueToast;
 import com.sanyuelanv.sanwebapp.view.SanYueNavView;
 import com.sanyuelanv.sanwebapp.view.SanYueWebView;
@@ -61,6 +63,7 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
     private SanYueModal modal;
     private int currentNightMode;
     private SanYueActionSheet actionSheet;
+    private SanYuePicker picker;
 
     // region Override
     @Override
@@ -71,6 +74,9 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
         }
         if (actionSheet != null){
             actionSheet.changStyle(currentNightMode);
+        }
+        if (picker != null){
+            picker.changStyle(currentNightMode);
         }
 //        switch (currentNightMode){
 //            case Configuration.UI_MODE_NIGHT_NO:{
@@ -353,9 +359,9 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
         if (item == null || ID == null) return;
         modal = new SanYueModal(item,currentNightMode);
         final String finalID = ID;
-        modal.setListener(new SanYueModal.OnSelectListener() {
+        modal.setListener(new BaseAlertLinearLayout.OnControlBtnListener() {
             @Override
-            public void onSelect(int type) {
+            public void onClick(int type) {
                 try {
                     JSONObject res = new JSONObject();
                     res.put("result",type);
@@ -364,6 +370,7 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
                 catch (Exception e){
 
                 }
+                modal.dismiss();
                 modal = null;
             }
         });
@@ -385,9 +392,9 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
         if (item == null || ID == null) return;
         actionSheet = new SanYueActionSheet(item,currentNightMode,app.getAppInfoItem().getActionSheetHeight());
         final String finalID = ID;
-        actionSheet.setListener(new SanYueBaseBottomDialog.OnSelectListener() {
+        actionSheet.setListener(new BaseAlertLinearLayout.OnControlBtnListener() {
             @Override
-            public void onSelect(int type) {
+            public void onClick(int type) {
                 try {
                     JSONObject res = new JSONObject();
                     res.put("result",type);
@@ -395,6 +402,7 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
                 }
                 catch (Exception e){
                 }
+                actionSheet.dismiss();
                 actionSheet = null;
             }
         });
@@ -403,6 +411,10 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
     private void SanYue_showPick(JSONObject jsonObject){
         String ID = null;
         SanYuePickItem item = null;
+        if (picker != null){
+            picker.dismiss();
+            picker = null;
+        }
         try{
             ID = jsonObject.getString("id");
             item = new SanYuePickItem(jsonObject.getJSONObject("data"));
@@ -410,7 +422,39 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
         catch (Exception e){
         }
         if (item == null || ID == null || item.getMode() < 0) return;
-        SanYuePicker picker = new SanYuePicker(item,currentNightMode,app.getAppInfoItem().getActionSheetHeight());
+        picker = new SanYuePicker(item,currentNightMode,app.getAppInfoItem().getActionSheetHeight());
+        final String finalID = ID;
+        picker.setListener(new SanYuePickerView.OnSelectListener() {
+            @Override
+            public void onSelect(int pos, int type) {
+                try {
+                    JSONObject res = new JSONObject();
+                    if (type <= 0){
+                        if (type < 0){  res.put("result",type);  }
+                        else {  res.put("result",pos);  }
+                        mWebView.evaluateJsByID(finalID,res,null,false);
+                        picker.dismiss();
+                        picker = null;
+                    }
+                    else {
+                        res.put("result",pos);
+                        mWebView.evaluateJsByID(finalID,res,null,true);
+                    }
+                }
+                catch (Exception e){
+                }
+            }
+
+            @Override
+            public void onSelectMulti(int[] pos, int type) {
+
+            }
+
+            @Override
+            public void onSelectDate(String res, int type) {
+
+            }
+        });
         picker.show(getSupportFragmentManager(),"sanYue_picker");
     }
     // endregion javaScriptMethod

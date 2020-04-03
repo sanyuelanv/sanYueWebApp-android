@@ -147,8 +147,8 @@ public class SanYueWebView extends WebView {
         String str = "SanYueWebApp.pub('" + name + "',"+ successStr +","+ errorStr +")";
         evaluateJavascript(str,null);
     }
-    public void evaluateJsByID(String ID, JSONObject success,JSONObject error,boolean removeLister){
-        String flag = removeLister ? "true" : "false";
+    public void evaluateJsByID(String ID, JSONObject success,JSONObject error,boolean notRemoveLister){
+        String flag = notRemoveLister ? "true" : "false";
         String successStr = success == null ? "null" : success.toString();
         String errorStr = error == null ? "null" : error.toString();
         String str = "SanYueWebApp.CALLBACK["+ ID +"]("+ successStr +","+ errorStr +","+ flag +")";

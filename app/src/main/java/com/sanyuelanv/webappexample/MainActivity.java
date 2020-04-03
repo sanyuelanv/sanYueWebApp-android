@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 SanYueWebApp sanYuewebApp = SanYueWebApp.initInstance(this);
                 sanYuewebApp.setTimeout(20);
                 sanYuewebApp.setDebug(true);
-                sanYuewebApp.create(this,"http://172.16.0.44:3000/app.zip");
+                sanYuewebApp.create(this,"http://192.168.50.197:3000/app.zip");
                 break;
             }
             case R.id.clear:{

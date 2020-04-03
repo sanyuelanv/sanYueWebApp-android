@@ -47,7 +47,7 @@ public class SanYueActionSheetView extends BaseAlertLinearLayout implements View
         int paddingH = SanYueUIUtils.dp2px(mContext,24);
         // 顶部标题 or 可能不存在
         if (!item.getTitle().equals("") && item.getTitle() != null){
-            TextView textView = createTextView(2,-2,item.getTitle(),14,paddingH,h);
+            TextView textView = createTextView(2,-3,item.getTitle(),14,paddingH,h);
             textView.getPaint().setFakeBoldText(true);
             addLineInView(lineHeight);
             hasTitle = true;
@@ -55,7 +55,7 @@ public class SanYueActionSheetView extends BaseAlertLinearLayout implements View
         // 中间列表
         for (int i = 0; i < item.getItemList().length; i++) {
             String text = item.getItemList()[i];
-            TextView textView =  createTextView(1,i + 1,text,17,paddingH,h);
+            TextView textView =  createTextView(1,i,text,17,paddingH,h);
             textView.setOnClickListener(this);
             if (i < item.getItemList().length - 1){
                 addLineInView(lineHeight);
@@ -65,12 +65,12 @@ public class SanYueActionSheetView extends BaseAlertLinearLayout implements View
             }
         }
         // 底部取消按钮
-        TextView textView =  createTextView(1,0,item.getCancelText(),17,paddingH,h);
+        TextView textView =  createTextView(1,-1,item.getCancelText(),17,paddingH,h);
         textView.setOnClickListener(this);
         changeTheme(currentNightMode);
 
         if (item.isBackGroundCancel()){
-            setTag(-1);
+            setTag(-2);
             setOnTouchListener(this);
             setOnClickListener(this);
         }
@@ -123,17 +123,24 @@ public class SanYueActionSheetView extends BaseAlertLinearLayout implements View
             View view = mainBox.getChildAt(i);
             int tag = (int) view.getTag();
             switch (tag){
-                case -3:{
+                // line
+                case -4:{
                     view.setBackgroundColor(lineColor);
                     break;
                 }
-                case -2:{
+                // title
+                case -3:{
                     TextView textView = (TextView)view;
                     textView.setBackground(SanYueUIUtils.getDrawable(radii,0,0,itemBgColor));
                     textView.setTextColor(titleColor);
                     break;
                 }
-                case 0:{
+                // 背景
+                case -2:{
+                    break;
+                }
+                // 取消
+                case -1:{
                     TextView textView = (TextView)view;
                     textView.setTextColor(cancelTextColor);
                     textView.setBackground(createStateDrawable(itemBgColor,itemBgPressColor, radiiNone));
@@ -174,7 +181,7 @@ public class SanYueActionSheetView extends BaseAlertLinearLayout implements View
     }
     private void addLineInView(int height){
         View line = new View(mContext);
-        line.setTag(-3);
+        line.setTag(-4);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,height);
         mainBox.addView(line,params);
     }

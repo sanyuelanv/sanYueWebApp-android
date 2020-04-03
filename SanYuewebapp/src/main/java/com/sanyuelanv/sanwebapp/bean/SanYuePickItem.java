@@ -22,6 +22,7 @@ public class SanYuePickItem {
     private Date timeEnd;
     private Date timeValue;
     private String originTimeValue;
+    private boolean backGroundCancel;
 
     //private ArrayList<T> multiList;
 
@@ -29,6 +30,9 @@ public class SanYuePickItem {
     public SanYuePickItem(JSONObject jsonObject) {
         try {  listenChange = jsonObject.getBoolean("backGroundCancel");  }
         catch (Exception e){  listenChange = false;  }
+
+        try {  backGroundCancel = jsonObject.getBoolean("backGroundCancel");  }
+        catch (Exception e){  backGroundCancel = false;  }
 
         String senseMode = "auto";
         try {  senseMode = jsonObject.getString("senseMode");  }
@@ -42,7 +46,7 @@ public class SanYuePickItem {
         catch (Exception e){  mode = "none";  }
         if (mode.equals("normal")){
             this.mode = 0;
-            try {  normalValue = jsonObject.getInt("normalValue");  }
+            try {  normalValue = jsonObject.getInt("value");  }
             catch (Exception e){  normalValue = 0;  }
             try {
                 JSONArray arr = jsonObject.getJSONArray("list");
@@ -135,5 +139,13 @@ public class SanYuePickItem {
 
     public void setOriginTimeValue(String originTimeValue) {
         this.originTimeValue = originTimeValue;
+    }
+
+    public boolean isBackGroundCancel() {
+        return backGroundCancel;
+    }
+
+    public void setBackGroundCancel(boolean backGroundCancel) {
+        this.backGroundCancel = backGroundCancel;
     }
 }

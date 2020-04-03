@@ -19,21 +19,11 @@ import com.sanyuelanv.sanwebapp.view.SanYueActionSheetView;
  * Create By songhang in 2020/4/1
  */
 public abstract  class SanYueBaseBottomDialog extends BottomSheetDialogFragment {
-    protected int selectType;
     protected int height;
     protected int currentNightMode;
-    protected OnSelectListener listener;
-    public interface OnSelectListener {
-        void onSelect(int type);
-    }
-    public void setListener(OnSelectListener listener) {
-        this.listener = listener;
-    }
-
     public SanYueBaseBottomDialog(int height, int currentNightMode) {
         this.height = height;
         this.currentNightMode = currentNightMode;
-        this.selectType = -1;
     }
 
     @Override
@@ -46,7 +36,6 @@ public abstract  class SanYueBaseBottomDialog extends BottomSheetDialogFragment 
     public void onStart() {
         super.onStart();
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-//        dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         FrameLayout bottomSheet = dialog.getDelegate().findViewById(R.id.design_bottom_sheet);
         bottomSheet.setBackgroundResource(android.R.color.transparent);
@@ -70,12 +59,6 @@ public abstract  class SanYueBaseBottomDialog extends BottomSheetDialogFragment 
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (listener != null){  listener.onSelect(selectType);  }
-    }
-
     protected abstract void changStyle(int mode);
     protected abstract View createView();
 }

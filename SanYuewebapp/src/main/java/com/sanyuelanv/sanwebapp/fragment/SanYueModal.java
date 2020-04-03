@@ -33,19 +33,15 @@ import com.sanyuelanv.sanwebapp.view.SanYueModalView;
  */
 public class SanYueModal extends DialogFragment {
     private SanYueModalItem modalItem;
-    private int selectType;
-    private OnSelectListener listener;
+    private BaseAlertLinearLayout.OnControlBtnListener listener;
     private SanYueModalView modalView;
     private int currentNightMode;
-    public interface OnSelectListener {
-        void onSelect(int type);
-    }
-    public void setListener(OnSelectListener listener) {
+
+    public void setListener(BaseAlertLinearLayout.OnControlBtnListener listener) {
         this.listener = listener;
     }
     public SanYueModal(SanYueModalItem item,int currentNightMode) {
         this.modalItem = item;
-        this.selectType = 0;
         this.currentNightMode = currentNightMode;
     }
 
@@ -60,13 +56,7 @@ public class SanYueModal extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final Window window = getDialog().getWindow();
         modalView = new SanYueModalView(getContext(),modalItem,currentNightMode);
-        modalView.setListener(new BaseAlertLinearLayout.OnControlBtnListener() {
-            @Override
-            public void onClick(int t) {
-                selectType = t;
-                getDialog().dismiss();
-            }
-        });
+        modalView.setListener(listener);
         window.getDecorView().setPadding(0, 0, 0, 0);
         window.setBackgroundDrawableResource(android.R.color.transparent);
         WindowManager.LayoutParams wlp = window.getAttributes();
@@ -78,13 +68,6 @@ public class SanYueModal extends DialogFragment {
         window.setAttributes(wlp);
         return modalView;
     }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (listener != null){  listener.onSelect(selectType);  }
-    }
-
     public void changStyle(int mode){
         if (modalView != null){
             modalView.changeTheme(mode);

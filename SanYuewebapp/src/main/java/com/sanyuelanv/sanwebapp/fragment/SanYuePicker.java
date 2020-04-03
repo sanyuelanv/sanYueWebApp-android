@@ -15,7 +15,13 @@ import com.sanyuelanv.sanwebapp.view.SanYuePickerView;
 public class SanYuePicker extends SanYueBaseBottomDialog {
     private SanYuePickItem pickItem;
     private SanYuePickerView pickerView;
-    public SanYuePicker(SanYuePickItem pickItem, int currentNightMode,int height) {
+    private SanYuePickerView.OnSelectListener listener;
+
+    public void setListener(SanYuePickerView.OnSelectListener listener) {
+        this.listener = listener;
+    }
+
+    public SanYuePicker(SanYuePickItem pickItem, int currentNightMode, int height) {
         super(height,currentNightMode);
         this.pickItem = pickItem;
     }
@@ -27,13 +33,7 @@ public class SanYuePicker extends SanYueBaseBottomDialog {
     @Override
     protected View createView() {
         SanYuePickerView view = new SanYuePickerView(getContext(),pickItem,currentNightMode);
-        view.setListener(new BaseAlertLinearLayout.OnControlBtnListener() {
-            @Override
-            public void onClick(int type) {
-                selectType = type;
-                getDialog().dismiss();
-            }
-        });
+        view.setSelectListener(listener);
         pickerView = view;
         return view;
     }
