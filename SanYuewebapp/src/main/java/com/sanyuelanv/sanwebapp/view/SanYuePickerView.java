@@ -22,6 +22,8 @@ import com.sanyuelanv.sanwebapp.base.BaseAlertLinearLayout;
 import com.sanyuelanv.sanwebapp.bean.SanYuePickItem;
 import com.sanyuelanv.sanwebapp.utils.SanYueUIUtils;
 
+import java.util.ArrayList;
+
 /**
  * Create By songhang in 2020/4/1
  */
@@ -31,8 +33,9 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
     private TextView cancelBtn;
     private TextView successBtn;
     private View topLine;
-    private SanYueMyPicker picker;
-    private int normalIndex;
+    private SanYueMultiPicker picker;
+    private int selectIndex;
+    private String selectTime;
     protected OnSelectListener selectListener;
     public interface OnSelectListener {
         void onSelect(int pos,int type);
@@ -50,9 +53,23 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
                         selectListener.onSelect(0,type);
                     }
                     else {
-                        selectListener.onSelect(normalIndex,type);
+                        selectListener.onSelect(selectIndex,type);
                     }
                     break;
+                }
+                case 1:{
+                    break;
+                }
+                case 2:
+                case 3:{
+                    if (selectListener == null) return;
+                    int type = (int)v.getTag();
+                    if (type < 0){
+                        selectListener.onSelectDate("",type);
+                    }
+                    else {
+                        selectListener.onSelectDate(selectTime,type);
+                    }
                 }
             }
         }
@@ -78,7 +95,7 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
         addView(mainBox,mainBoxParams);
         // 顶部 height= 50
         creatTopView();
-        // list : 5 个 height= 56
+        // list
         creatList();
         // 改变主题
         changeTheme(currentNightMode);
@@ -128,25 +145,71 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
     private void creatList(){
         switch (item.getMode()){
             case 0:{
-                normalIndex = item.getNormalValue();
-                picker = new SanYueMyPicker(mContext,item.getList());
-                picker.setCurrentItem(normalIndex);
-                picker.setOnItemSelectedListener(new OnItemSelectedListener() {
+                selectIndex = item.getNormalValue();
+                picker = new SanYueMultiPicker(mContext,item.getList(),selectIndex);
+                picker.setSelectListener(new SanYueMultiPicker.OnSelectListener() {
                     @Override
-                    public void onItemSelected(int index) {
-                        normalIndex = index;
-                        if (item.isListenChange()){
-                            selectListener.onSelect(index,1);
+                    public void onSelect(ArrayList<Integer> value) {
+                        selectIndex = value.get(0);
+                        if (selectListener != null){
+                            selectListener.onSelect(selectIndex,1);
                         }
                     }
                 });
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                mainBox.addView(picker,params);
+                break;
+            }
+            case 1:{
+                // multi
+                picker = new SanYueMultiPicker(mContext,item.getMultiList(),item.getMultiValue());
+                break;
+            }
+            case 2:{
+                // time
+                picker = new SanYueMultiPicker(mContext,item.getTimeStart(),item.getTimeEnd(),item.getTimeValue(),3);
+                selectTime = getSelectTimeBySplit(":",picker.getValue());
+                picker.setSelectListener(new SanYueMultiPicker.OnSelectListener() {
+                    @Override
+                    public void onSelect(ArrayList<Integer> value) {
+                        selectTime = getSelectTimeBySplit(":",value);
+                        if (selectListener != null){
+                            selectListener.onSelectDate(selectTime,1);
+                        }
+                    }
+                });
+                break;
+            }
+            case 3:{
+                picker = new SanYueMultiPicker(mContext,item.getTimeStart(),item.getTimeEnd(),item.getTimeValue(),4);
+                selectTime = getSelectTimeBySplit("-",picker.getSelectValueByCalendar());
+                picker.setSelectListener(new SanYueMultiPicker.OnSelectListener() {
+                    @Override
+                    public void onSelect(ArrayList<Integer> value) {
+                        selectTime = getSelectTimeBySplit("-",value);
+                        if (selectListener != null){
+                            selectListener.onSelectDate(selectTime,1);
+                        }
+                    }
+                });
                 break;
             }
         }
-
-
+        if (picker != null){
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            mainBox.addView(picker,params);
+        }
+    }
+    private String getSelectTimeBySplit(String split,ArrayList<Integer>list){
+        StringBuilder res = new StringBuilder();
+        int pos = 0;
+        for (Integer value : list){
+            String str = value < 10 ? "0" + value : value + "";
+            res.append(str);
+            if (pos < list.size() - 1){
+                res.append(split);
+            }
+            pos += 1;
+        }
+        return res.toString();
     }
     @Override
     public void changeTheme(int mode) {
@@ -181,7 +244,7 @@ public class SanYuePickerView extends BaseAlertLinearLayout {
             lineColor = Color.rgb(80,80,80);
         }
         if (picker != null){
-            picker.changeMode(mode);
+            picker.changeMode(currentNightMode);
         }
         mainBox.setBackground(SanYueUIUtils.getDrawable(radii,0,0,mainBgColor));
         successBtn.setTextColor(getTextColorList(successTextColors));

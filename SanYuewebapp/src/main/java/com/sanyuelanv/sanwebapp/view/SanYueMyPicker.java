@@ -20,6 +20,7 @@ import com.sanyuelanv.sanwebapp.utils.SanYueUIUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Create By songhang in 2020/4/3
@@ -27,17 +28,17 @@ import java.util.ArrayList;
 public class SanYueMyPicker extends WheelView {
     private Context mContext;
 
-    public SanYueMyPicker(Context context, ArrayList<String>list) {
+    public SanYueMyPicker(Context context, ArrayList<String>list,Boolean isCyclic) {
         super(context);
         mContext = context;
-        initData(list);
-    }
-    private void  initData(ArrayList<String>list){
         setAdapter(new ArrayWheelAdapter(list));
+        initData(isCyclic);
+    }
+    private void  initData(Boolean isCyclic){
         setAlphaGradient(true);
         setLineSpacingMultiplier(2.4f);
         setTextSize(20f);
-        setCyclic(false);
+        setCyclic(isCyclic);
         setDividerWidth(SanYueUIUtils.dp2px(mContext,1)/2);
     }
     public void changeMode(int mode){

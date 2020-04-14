@@ -3,7 +3,9 @@ package com.sanyuelanv.sanwebapp.bean;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -21,10 +23,10 @@ public class SanYuePickItem {
     private Date timeStart;
     private Date timeEnd;
     private Date timeValue;
-    private String originTimeValue;
+
     private boolean backGroundCancel;
 
-    //private ArrayList<T> multiList;
+    private ArrayList<SanYueMultiPickListItem> multiList;
 
 
     public SanYuePickItem(JSONObject jsonObject) {
@@ -55,12 +57,104 @@ public class SanYuePickItem {
             }
             catch (Exception e){}
         }
-        else if (mode.equals("multi")){  this.mode = 1;  }
-        else if (mode.equals("time")){  this.mode = 2;  }
-        else if (mode.equals("date")){  this.mode = 3;  }
+        else if (mode.equals("multi")){
+            this.mode = 1;
+            multiList = new ArrayList<>();
+            multiValue = new ArrayList<>();
+            try {
+                JSONArray arr =  jsonObject.getJSONArray("list");
+                int len = arr.length();
+                for (int i = 0; i <len ; i++) {
+                    multiList.add(new SanYueMultiPickListItem(arr.getJSONObject(i)));
+                }
+            }
+            catch (Exception e){
+
+            }
+            try {
+                JSONArray arr =  jsonObject.getJSONArray("value");
+                int len = arr.length();
+                for (int i = 0; i <len ; i++) {  multiValue.add(arr.getInt(i)); }
+            }
+            catch (Exception e){
+
+            }
+        }
+        else if (mode.equals("time")){
+            this.mode = 2;
+            SimpleDateFormat formatter = new SimpleDateFormat( "HH:mm");
+            try {
+                String timeStart = jsonObject.getString("start");
+                this.timeStart = formatter.parse(timeStart);
+            }
+            catch (Exception e){
+                this.timeEnd = getTimeByCalendar(0,0,0,1);
+            }
+            try {
+                String timeEnd = jsonObject.getString("end");
+                this.timeEnd = formatter.parse(timeEnd);
+            }
+            catch (Exception e){
+                this.timeEnd = getTimeByCalendar(23,59,59,1);
+            }
+            try {
+                String timeValue = jsonObject.getString("value");
+                this.timeValue = formatter.parse(timeValue);
+            }
+            catch (Exception e){
+                this.timeValue = this.timeStart;
+            }
+            if(timeValue.getTime() < timeStart.getTime()){  timeValue = timeStart; }
+            if(timeValue.getTime() > timeEnd.getTime()){  timeValue = timeEnd; }
+        }
+        else if (mode.equals("date")){
+            this.mode = 3;
+            SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd");
+            try {
+                String timeStart = jsonObject.getString("start");
+                this.timeStart = formatter.parse(timeStart);
+            }
+            catch (Exception e){
+                this.timeStart = getTimeByCalendar(1900,0,1,0);
+            }
+            try {
+                String timeEnd = jsonObject.getString("end");
+                this.timeEnd = formatter.parse(timeEnd);
+            }
+            catch (Exception e){
+                this.timeEnd = getTimeByCalendar(2100,11,31,0);
+            }
+            try {
+                String timeValue = jsonObject.getString("value");
+                this.timeValue = formatter.parse(timeValue);
+            }
+            catch (Exception e){
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new Date());
+                this.timeValue = calendar.getTime();
+            }
+
+            if(timeValue.getTime() < timeStart.getTime()){  timeValue = timeStart; }
+            if(timeValue.getTime() > timeEnd.getTime()){  timeValue = timeEnd; }
+        }
         else { this.mode = -1; }
     }
+    private Date getTimeByCalendar(int i,int j,int k,int type){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        if (type == 1){
+            calendar.set(Calendar.HOUR_OF_DAY, i);
+            calendar.set(Calendar.MINUTE, j);
+            calendar.set(Calendar.SECOND, k);
+        }
+        else {
+            calendar.set(Calendar.YEAR, i);
+            calendar.set(Calendar.MONTH, j);
+            calendar.set(Calendar.DAY_OF_MONTH, k);
+        }
 
+        return  calendar.getTime();
+    }
     public int getMode() {
         return mode;
     }
@@ -133,19 +227,19 @@ public class SanYuePickItem {
         this.timeValue = timeValue;
     }
 
-    public String getOriginTimeValue() {
-        return originTimeValue;
-    }
-
-    public void setOriginTimeValue(String originTimeValue) {
-        this.originTimeValue = originTimeValue;
-    }
-
     public boolean isBackGroundCancel() {
         return backGroundCancel;
     }
 
     public void setBackGroundCancel(boolean backGroundCancel) {
         this.backGroundCancel = backGroundCancel;
+    }
+
+    public ArrayList<SanYueMultiPickListItem> getMultiList() {
+        return multiList;
+    }
+
+    public void setMultiList(ArrayList<SanYueMultiPickListItem> multiList) {
+        this.multiList = multiList;
     }
 }

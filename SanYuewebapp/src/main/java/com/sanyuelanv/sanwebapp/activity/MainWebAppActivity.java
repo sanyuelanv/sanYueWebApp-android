@@ -451,8 +451,23 @@ public class MainWebAppActivity extends BaseActivity implements AndroidtoJs.onMe
             }
 
             @Override
-            public void onSelectDate(String res, int type) {
-
+            public void onSelectDate(String select, int type) {
+                try {
+                    JSONObject res = new JSONObject();
+                    if (type <= 0){
+                        if (type < 0){  res.put("result",type);  }
+                        else {  res.put("result",select);  }
+                        mWebView.evaluateJsByID(finalID,res,null,false);
+                        picker.dismiss();
+                        picker = null;
+                    }
+                    else {
+                        res.put("result",select);
+                        mWebView.evaluateJsByID(finalID,res,null,true);
+                    }
+                }
+                catch (Exception e){
+                }
             }
         });
         picker.show(getSupportFragmentManager(),"sanYue_picker");
